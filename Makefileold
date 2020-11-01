@@ -1,0 +1,44 @@
+ASG_NICKNAME=HW18
+TEST_EXPECTED=expected.txt 
+TEST_ACTUAL=actual.txt 
+SRC_C=huffman.c huffman_compress.c huffman_compress.error_messages.c simple_file_utilities.c priority_queue.c frequencies.c bit_writer.c
+MAIN_C=huffman_compress_main.c
+MAIN_EXE=huffman_compress
+SRC_H=huffman.h huffman_compress.h simple_file_utilities.h bit_writer.h priority_queue.h frequencies.h miniunit.h clog.h 
+TEST_C=test_huffman_compress.c 
+TEST_EXE=test_huffman_compress
+
+TEST_2_C=test_huffman.c 
+CC=gcc
+CFLAGS=-g -std=c11 -Wall -Wshadow -Wvla -Werror -pedantic
+CFLAGS_GCOV=$(CFLAGS) -fprofile-arcs -ftest-coverage 
+SHELL=/bin/bash
+SUBMIT_FILES=$(SRC_C) $(SRC_H) $(MAIN_C) $(TEST_2_C) Makefile
+
+$(TEST_EXE): $(SRC_C) $(TEST_C) $(SRC_H)
+	$(CC) -o $(TEST_EXE) $(SRC_C) $(TEST_C) $(CFLAGS) 
+
+submit: 
+	264submit $(ASG_NICKNAME) $(SUBMIT_FILES)
+
+test: debug
+	./$(TEST_EXE)
+
+pretest: submit
+	264test $(ASG_NICKNAME)
+
+coverage: $(TEST_C) $(SRC_C)
+	$(CC) -o $(TEST_EXE) $(TEST_C) $(SRC_C) $(CFLAGS_GCOV) -DNDEBUG
+	./$(TEST_EXE)
+	gcov -f $(SRC_C)
+
+debug: $(SRC_C) $(TEST_C) 
+	$(CC) -DDEBUG -o $(TEST_EXE) $(SRC_C) $(TEST_C) $(CFLAGS)  
+
+clean: 
+	rm -f $(TEST_EXE) *.c.gcov *.gcda *.gcno
+
+$(MAIN_EXE): $(SRC_C) $(MAIN_C)
+	 $(CC) -o $(MAIN_EXE) $(MAIN_C) $(SRC_C) $(CFLAGS)
+
+.PHONY: submit test pretest coverage
